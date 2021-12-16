@@ -21,12 +21,18 @@
 // TODO Set linker ROM ranges to 'default,-0-7FF' under "Memory model" pull-down.
 // TODO Set linker code offset to '800' under "Additional options" pull-down.
 
+ #define pressed 0
+ #define notPressed 1
+
 // Program constant definitions
-const unsigned char maxCount = 50;
+const unsigned char maxCount = 10;
 
 // Program variable definitions
 unsigned char SW2Count = 0;
 bool SW2Pressed = false;
+unsigned char SW5Count = 0;
+bool SW5Pressed = false;
+
 
 int main(void)
 {
@@ -37,28 +43,71 @@ int main(void)
     // Code in this while loop runs repeatedly.
     while(1)
 	{
-        // Count SW2 button presses
-        if(SW2 == 0)
+        // Count SW2 button presses for player 1
+        if(SW2 == pressed && SW2Pressed == false)
         {
             LED3 = 1;
-            SW2Count = SW2Count + 1;
+            SW2Pressed = true;
+            if(SW2Count < 255)
+            {
+                SW2Count += 1;
+            }
         }
-        else
+
+          // Count SW2 button presses for player 2
+        if(SW5 == pressed && SW5Pressed == false)
+        {
+            LED6 = 1;
+            SW5Pressed = true;
+            if(SW5Count < 255)
+            {
+                SW5Count += 1;
+            }
+        }
+
+        // Clear pressed state if released for player 1
+        if(SW2 == notPressed)
         {
             LED3 = 0;
+            SW2Pressed = false;
         }
-        
+
         if(SW2Count >= maxCount)
         {
             LED4 = 1;
+            while(SW3 == notPressed && SW4 == notPressed)
+            {
+                __delay_ms(20);
+            }
         }
-        
-        // Reset count and turn off LED D4
-        if(SW3 == 0)
+
+        // Clear pressed state if released for player 2
+        if(SW5 == notPressed)
+        {
+            LED6 = 0;
+            SW5Pressed = false;
+        }
+
+        if(SW5Count >= maxCount)
+        {
+            LED5 = 1;
+            while(SW3 == notPressed && SW4 == notPressed)
+            {
+                __delay_ms(20);
+            }
+        }
+
+        //Reset count and turn off LED D4 and LED D5
+        if(SW3 == pressed || SW4 == pressed) 
         {
             LED4 = 0;
             SW2Count = 0;
+            LED5 = 0;
+            SW5Count = 0;
         }
+
+    
+        
         
         // Add a short delay to the main while loop.
         __delay_ms(10);
@@ -94,11 +143,15 @@ int main(void)
  *    LED D4 once the count reaches 50. Try it, and count how many times you
  *    have to press the button until LED D4 turns on. SW3 resets the count so
  *    you can perform repeated attempts.
+
+ I only have to press it around 5 times for LED4 to light up, not 50.
  * 
  *    Did your count reach 50? Can you describe what the program is doing?
  *    (Hint: try pressing and releasing the button at different rates of speed.)
- because the program is checking if the button is pressed multiple times in the time that your finger is holding down the button.
- So if you press once, it will probably add more than 1 to the count.
+
+ the program is checking if the button is pressed multiple times in the time that your finger is holding down the button.
+ So if you press once, it will probably add more than 1 to the count which makes the count reach 50 way before 50 presses.
+
  * 4. Modify the second 'if' structure to add the else block, as shown below:
 
         if(SW2Count >= maxCount)
